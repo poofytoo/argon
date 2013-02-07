@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
+  </head>
+  <body>
+    <script type='text/javascript'>
+      var myDataRef = new Firebase('https://banker.firebaseio.com');
+      myDataRef.push({name: 'cows', text: 'tone'});
+    </script>
+  </body>
+</html>
