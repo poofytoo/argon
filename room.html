@@ -2,41 +2,12 @@
   <head>
     <script type='text/javascript' src='https://cdn.firebase.com/v0/firebase.js'></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="helperfunctions.js"></script>
     <script type='text/javascript'>
       var myDataRef = new Firebase('https://banker.firebaseio.com');
-      
-      //finds the next empty seat in a room
-      function getEmptySeat(room) {
-        for (i = 1; i < 5; i ++){
-          console.log(room["player"+i]);
-          if (room["player"+i] == "none"){
-            return i
-          }
-        }
-        return false
-      }
-      
-      //check if room is full
-      function checkRoomFull(room) {
-        for (i = 1; i < 5; i ++){
-          if (room["player"+i] == "none"){
-            return false;
-          }
-        }
-        return true;
-      }
-      
-      //returns the number of players left
-      function getPlayersLeft(room) {
-        k = 0;
-        for (i = 1; i < 5; i ++){
-          if (room["player"+i] == "none"){
-            k++;
-          }
-        }
-        return k;
-      }
-      
+      var internalRoundCounter = null;
+	  var internalState = "NEW_ROUND";
+
       //connect to a room
       var roomData = new Firebase('https://banker.firebaseio.com/roomData');
       roomData.once('value', function(snapshot) {
@@ -53,12 +24,47 @@
       //listener- anytime any value of the database is changed
       roomData.on('value', function(snapshot){
         room = snapshot.val()
-        $("#messagebox").append("WAITING FOR " + getPlayersLeft(room) + " PLAYERS<br />");
         
+		//if the global round number has incremented, but this particular room hasnt, the round has moved on
+		if (room['roundNum'] != internalRoundCounter){
+		  internalState = "NEW_ROUND";
+		  internalRoundCounter = room['roundNum'];
+		}
+		
         //if the room is full
         if(checkRoomFull(room)){
-          $("#messagebox").append("game's starting, bro");
-        }
+		  
+		  if (internalState == "NEW_ROUND"){
+			//Beginning of a new round, displays the message for players
+			$("#statTable").append(updateTable(room));
+			$("#messagebox").append("This is round " + internalRoundCounter + ". You have ??? cash money flows.");
+			$("#inputTxt").removeAttr('disabled');
+			$("#inputTxt").focus();
+			internalState = "WAITING_FOR_PLAYER_INPUT";
+		  
+		  } else if (internalState == "WAITING_FOR_PLAYER_INPUT"){
+			//We're waiting for the player to input a value
+			
+		  } else if (internalState == "WAITING_MESSAGE"){
+			//Player has finished entering a value, display message
+			$("#messagebox").append("Waiting for other players...");
+			$("#inputTxt").attr('disabled', 'disabled');
+			internalState = "WAITING_READY";
+			
+		  } else if (internalState == "WAITING_READY"){
+			//Player is now waiting for other players.
+			
+			if (checkCurrentRoundComplete(room) == -1){
+			  //This player has detected the round is complete! Move onto the next round, please
+			  roomData.child('roundNum').set(internalRoundCounter+1);
+			  //Do the calculations for the next round
+			  calcNextRound(room);
+			}
+		  }
+        } else {
+		  
+		  $("#messagebox").append("WAITING FOR " + getPlayersLeft(room) + " PLAYERS<br />");
+		}
       });
       
       //detect if a person leaves the room.
@@ -73,14 +79,30 @@
           }
           return closingMessage;
       };
-      
+      $(document).ready(function(){
+		$("#inputTxt").focus();
+		$("#submitBtn").click(function(){
+		  inputAmount = $("#inputTxt").val();
+		  internalState = "WAITING_MESSAGE";
+		  updateContrib(internalRoundCounter, inputAmount);
+		  
+		});
+	  });
     </script>
   </head>
   <body>
     <div id='messagebox'></div>
     <div id='inputbox'>
-    	<input type='text' />
-    	<input type='button' />
+    	<input type='text' id='inputTxt' disabled='disabled'/>
+    	<input type='button' id='submitBtn' value='submit'/>
     </div>
+	<table id='statTable'>
+	  <tr>
+		<th>1</th>
+		<th>2</th>
+		<th>3</th>
+		<th>4</th>
+	  </tr>
+	</table>
   </body>
 </html>

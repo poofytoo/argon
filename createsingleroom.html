@@ -4,7 +4,44 @@
   </head>
   <body>
     <script type='text/javascript'>
+      //Editable Parameters
+      var numRounds = 50;       //number of rounds
+      var startingCash = 10;    //cash they start with
+      var incrementalCash = 5;  //amount of cash they are given every round
+      
+      //Establish database connection
       var myDataRef = new Firebase('https://banker.firebaseio.com');
+      
+      //Generates the Rounds 1-50
+      game = {};
+      game['round0'] = {
+          1:startingCash,
+          2:startingCash,
+          3:startingCash,
+          4:startingCash
+      }
+      game['roundContr0'] = {
+          1:'none',
+          2:'none',
+          3:'none',
+          4:'none'
+      }
+      for (i = 1; i < numRounds; i ++){
+        game['round'+i] = {
+          1:'none',
+          2:'none',
+          3:'none',
+          4:'none'
+        };
+        game['roundContr'+i] = {
+          1:'none',
+          2:'none',
+          3:'none',
+          4:'none'
+        };
+      }
+      
+      //Generates the player & room data
       myDataRef.set({
         roomData:{
           roomID: 1,
@@ -12,18 +49,9 @@
           player2: 'none',
           player3: 'none',
           player4: 'none',
-          round1: {
-            1:'none',
-            2:'none',
-            3:'none',
-            4:'none'
-          },
-          round2: {
-            1:'none',
-            2:'none',
-            3:'none',
-            4:'none'
-          }
+          roundNum: 0,
+          ic: incrementalCash,
+          game: game
         }
       });
     </script>
