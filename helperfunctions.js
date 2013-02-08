@@ -70,12 +70,18 @@ function calcNextRound(room){
   
 }
 
+//updates the stat table
 function updateTable(room){
   rowToAdd = "";
   currentRound = room["roundNum"];
   currentRoundCash = room["game"]["round" + currentRound];
+  rowToAdd += "<td id='"+currentRound+"'>" + currentRound + "</td>";
   for (i = 1; i < 5; i ++){
     rowToAdd += "<td>" + currentRoundCash[i] + "</td>";
   }
-  return "<tr>" + rowToAdd + "</tr>";
+  if ($("#"+currentRound).length == 0 && currentRoundCash[1] != "none"){
+    return "<tr>" + rowToAdd + "</tr>";
+  } else {
+    return "";
+  }
 }

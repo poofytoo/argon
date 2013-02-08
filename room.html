@@ -4,6 +4,7 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="helperfunctions.js"></script>
     <script type='text/javascript'>
+	  
       var myDataRef = new Firebase('https://banker.firebaseio.com');
       var internalRoundCounter = null;
 	  var internalState = "NEW_ROUND";
@@ -14,16 +15,17 @@
         room = snapshot.val();
         playerID = getEmptySeat(room);
         if (playerID != false){
-          $("#messagebox").append("you are PLAYER" + playerID + "<br />Waiting for players...<br />");
+          $("#messagebox").append("<h2>you are PLAYER" + playerID + "</h2><h3>Waiting for others to join the room</h3>");
           roomData.child('player'+playerID).set('True');
         } else {
           alert("all seats are full in this room");
         }
       });
       
-      //listener- anytime any value of the database is changed
+      //listener- anytime any value of the database is changed, this function will be fired
       roomData.on('value', function(snapshot){
-        room = snapshot.val()
+		room = snapshot.val()
+		$("#statTable").append(updateTable(room));
         
 		//if the global round number has incremented, but this particular room hasnt, the round has moved on
 		if (room['roundNum'] != internalRoundCounter){
@@ -33,21 +35,27 @@
 		
         //if the room is full
         if(checkRoomFull(room)){
+		  console.log("state: " + internalState)
+		  
+		  //******************************
+		  //The state machine begins here:
+		  //******************************
 		  
 		  if (internalState == "NEW_ROUND"){
+			console.log(room);
 			//Beginning of a new round, displays the message for players
-			$("#statTable").append(updateTable(room));
-			$("#messagebox").append("This is round " + internalRoundCounter + ". You have ??? cash money flows.");
+			$("#messagebox").append("This is round " + internalRoundCounter + ".<br />");
 			$("#inputTxt").removeAttr('disabled');
+		  inputAmount = $("#inputTxt").val("");
 			$("#inputTxt").focus();
 			internalState = "WAITING_FOR_PLAYER_INPUT";
 		  
 		  } else if (internalState == "WAITING_FOR_PLAYER_INPUT"){
 			//We're waiting for the player to input a value
-			
+		  
 		  } else if (internalState == "WAITING_MESSAGE"){
 			//Player has finished entering a value, display message
-			$("#messagebox").append("Waiting for other players...");
+			$("#messagebox").append("Waiting for other players...<br />");
 			$("#inputTxt").attr('disabled', 'disabled');
 			internalState = "WAITING_READY";
 			
@@ -57,12 +65,13 @@
 			if (checkCurrentRoundComplete(room) == -1){
 			  //This player has detected the round is complete! Move onto the next round, please
 			  roomData.child('roundNum').set(internalRoundCounter+1);
-			  //Do the calculations for the next round
+			  //Do the calculations before beginning the next round
 			  calcNextRound(room);
 			}
 		  }
         } else {
 		  
+		  //If we are still waiting for people to join the room, display number of players left
 		  $("#messagebox").append("WAITING FOR " + getPlayersLeft(room) + " PLAYERS<br />");
 		}
       });
@@ -79,13 +88,28 @@
           }
           return closingMessage;
       };
+	  
       $(document).ready(function(){
+		
+		//sets the cursor on the input text
 		$("#inputTxt").focus();
-		$("#submitBtn").click(function(){
+		
+		//whenever the user hits submit or hits enter
+		function submitEnter(){
 		  inputAmount = $("#inputTxt").val();
 		  internalState = "WAITING_MESSAGE";
 		  updateContrib(internalRoundCounter, inputAmount);
-		  
+		}
+		
+		//listening to submitbutton being clicked
+		$("#submitBtn").click(function(){
+		  submitEnter();
+		});
+		//listening to hiting enter key
+		$(document).keypress(function(e) {
+		  if(e.which == 13) {
+			submitEnter();
+		  }
 		});
 	  });
     </script>
@@ -93,15 +117,16 @@
   <body>
     <div id='messagebox'></div>
     <div id='inputbox'>
-    	<input type='text' id='inputTxt' disabled='disabled'/>
+    	<input type='text' id='inputTxt' disabled='disabled' placeholder='enter an integer'/>
     	<input type='button' id='submitBtn' value='submit'/>
     </div>
 	<table id='statTable'>
 	  <tr>
-		<th>1</th>
-		<th>2</th>
-		<th>3</th>
-		<th>4</th>
+		<th>Round#</th>
+		<th>Player 1</th>
+		<th>Player 2</th>
+		<th>Player 3</th>
+		<th>Player 4</th>
 	  </tr>
 	</table>
   </body>
