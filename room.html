@@ -5,7 +5,41 @@
   <body>
     <script type='text/javascript'>
       var myDataRef = new Firebase('https://banker.firebaseio.com');
-      myDataRef.push({name: 'cows', text: 'tone'});
+      
+      //finds the next empty seat in a room
+      function getEmptySeat(room){
+        for (i = 1; i < 5; i ++){
+          console.log(room["player"+i]);
+          if (room["player"+i] == "none"){
+            return i
+          }
+        }
+        return false
+      }
+      
+      //connect to a room
+      var roomData = new Firebase('https://banker.firebaseio.com/roomData');
+      roomData.once('value', function(snapshot) {
+        room = snapshot.val();
+        playerID = getEmptySeat(room);
+        if (playerID != false){
+          roomData.child('player'+playerID).set('True');
+          alert(playerID);
+        } else {
+          alert("all seats are full in this room");
+        }
+      });
+      
+      //detect if a person leaves the room.
+      window.onbeforeunload = function (e) {
+          var e = e || window.event;
+          var closingMessage = 'Closing this window will likely cause you cancer';
+          roomData.child('player'+playerID).set('none');
+          if (e) {
+            e.returnValue = closingMessage;
+          }
+          return closingMessage;
+      };
     </script>
   </body>
 </html>
