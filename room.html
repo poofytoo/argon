@@ -32,8 +32,8 @@
         room = snapshot.val();
         playerID = getEmptySeat(room);
         if (playerID != false){
+          $("#messagebox").append("you are PLAYER" + playerID + "<br />Waiting for players...<br />");
           roomData.child('player'+playerID).set('True');
-          $("#messagebox").append("you are PLAYER" + playerID);
         } else {
           alert("all seats are full in this room");
         }
@@ -48,14 +48,17 @@
       
       //detect if a person leaves the room.
       window.onbeforeunload = function (e) {
-          var e = e || window.event;
+          e = e || window.event;
           var closingMessage = 'Closing this window will likely cause you cancer';
-          roomData.child('player'+playerID).set('none');
+          if (playerID != false){
+            roomData.child('player'+playerID).set('none');
+          }
           if (e) {
             e.returnValue = closingMessage;
           }
           return closingMessage;
       };
+      
     </script>
   </head>
   <body>

@@ -5,7 +5,28 @@
   <body>
     <script type='text/javascript'>
       var myDataRef = new Firebase('https://banker.firebaseio.com');
-      myDataRef.set({roomData:{roomID: 1, player1: 'none', player2: 'none', player3: 'none', player4: 'none'}});
+      myDataRef.set({
+        roomData:{
+          roomID: 1,
+          player1: 'none',
+          player2: 'none',
+          player3: 'none',
+          player4: 'none',
+          round1: {
+            1:'none',
+            2:'none',
+            3:'none',
+            4:'none'
+          },
+          round2: {
+            1:'none',
+            2:'none',
+            3:'none',
+            4:'none'
+          }
+        }
+      });
     </script>
+    Creating Room 1...
   </body>
 </html>
