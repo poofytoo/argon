@@ -26,6 +26,17 @@
         return true;
       }
       
+      //returns the number of players left
+      function getPlayersLeft(room) {
+        k = 0;
+        for (i = 1; i < 5; i ++){
+          if (room["player"+i] == "none"){
+            k++;
+          }
+        }
+        return k;
+      }
+      
       //connect to a room
       var roomData = new Firebase('https://banker.firebaseio.com/roomData');
       roomData.once('value', function(snapshot) {
@@ -39,9 +50,13 @@
         }
       });
       
-      //wait until the room is full
+      //listener- anytime any value of the database is changed
       roomData.on('value', function(snapshot){
-        if(checkRoomFull(snapshot.val())){
+        room = snapshot.val()
+        $("#messagebox").append("WAITING FOR " + getPlayersLeft(room) + " PLAYERS<br />");
+        
+        //if the room is full
+        if(checkRoomFull(room)){
           $("#messagebox").append("game's starting, bro");
         }
       });
